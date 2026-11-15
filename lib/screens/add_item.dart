@@ -218,7 +218,7 @@ class _AddItemState extends State<AddItem> {
                   type: isFoundSelected, // Set the type as needed
                 );
                 //provider.addItem(newItem);
-                print("#Debug add_item.dart -> type of added item = ${newItem.type}");
+                debugPrint("#Debug add_item.dart -> type of added item = ${newItem.type}");
 
                 Navigator.of(context).pop<Item>(newItem);
                 if(newItem != null){

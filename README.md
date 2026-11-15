@@ -6,11 +6,44 @@ A Flutter mobile application for reporting and browsing lost and found items. Us
 
 ## Screenshots
 
-> **Add your image:** Save a screenshot of the login or sign-up screen as `assets/screenshots/authentication.png`, then replace this placeholder with `![Login and sign-up screens](assets/screenshots/authentication.png)`.
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="assets/screenshots/authentication.png" alt="Authentication" width="520" />
+      <br />
+      <sub><b>Authentication</b></sub>
+      <div style="height: 30px;"></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="assets/screenshots/item-listings.png" alt="Item listings" width="260" />
+      <br/>
+      <sub><b>Item listings</b></sub>
+      <div style="height: 30px;"></div>
+    </td>
+    <td align="center">
+      <img src="assets/screenshots/report-item.png" alt="Report a lost or found item" width="260" />
+      <br/>
+      <sub><b>Report a lost or found item</b></sub>
+      <div style="height: 30px;"></div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="assets/screenshots/detail-screen.png" alt="Lost or found item detail" width="520" />
+      <br/>
+      <sub><b>Lost or found item detail</b></sub>
+      <div style="height: 30px;"></div>
+    </td>
+  </tr>
+</table>
 
-> **Add your image:** Save a screenshot showing the Lost and Found listing tabs as `assets/screenshots/item-listings.png`, then replace this placeholder with `![Lost and Found item listings](assets/screenshots/item-listings.png)`.
+<!-- ![Login and sign-up screens](assets/screenshots/authentication.png)
 
-> **Add your image:** Save a screenshot of the report form as `assets/screenshots/report-item.png`, then replace this placeholder with `![Report a lost or found item](assets/screenshots/report-item.png)`.
+![Lost and Found item listings|250x400](assets/screenshots/item-listings.png) ![Report a lost or found item|100](assets/screenshots/report-item.png)
+
+![Lost or found item detail](assets/screenshots/detail-screen.png) -->
 
 ## Features
 

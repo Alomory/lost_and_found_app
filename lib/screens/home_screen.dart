@@ -148,14 +148,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 user: widget.user,
               );
             }));
-            if(result != null){
-              if(result.itemName != item.itemName ||
-              result.itemDescription != item.itemDescription ||
-              result.location != item.location){
-                setState(() {
-                  
-                });
-              }
+            if(result.itemName != item.itemName ||
+            result.itemDescription != item.itemDescription ||
+            result.location != item.location){
+              setState(() {
+                
+              });
             }
           },
           child: Row(

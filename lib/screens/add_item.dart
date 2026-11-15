@@ -221,9 +221,6 @@ class _AddItemState extends State<AddItem> {
                 debugPrint("#Debug add_item.dart -> type of added item = ${newItem.type}");
 
                 Navigator.of(context).pop<Item>(newItem);
-                if(newItem != null){
-                  Navigator.of(context).pop<Item>(newItem);
-                }
               },
               child: Text('Submit'),
             ),

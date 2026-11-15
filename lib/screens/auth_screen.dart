@@ -32,7 +32,6 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     ListOfItems logingProvider = Provider.of<ListOfItems>(context);
-    double screenHeight = MediaQuery.of(context).size.height;
     _users = logingProvider.userList;
 
     return Scaffold(

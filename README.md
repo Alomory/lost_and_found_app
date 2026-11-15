@@ -1,8 +1,6 @@
 # Lost & Found App
 
-A Flutter mobile application for reporting and browsing lost and found items. Users can create an account, browse item listings, and submit reports to help connect people with missing belongings.
-
-> **Project context:** Independently designed and developed by me as an academic project.
+A Flutter application for reporting lost and found belongings. Users can create an account, browse separate lost and found listings, and submit reports for items.
 
 ## Screenshots
 
@@ -47,64 +45,52 @@ A Flutter mobile application for reporting and browsing lost and found items. Us
 
 ## Features
 
-- **Account access:** Login and sign-up flows for application users.
-- **Lost and Found listings:** Browse item reports in separate Lost and Found tabs.
-- **Item reporting:** Submit a report for an item that has been lost or found.
-- **Local and cloud technology integration:** Uses SQLite and Firebase as part of the application's data workflow.
+- Account registration and sign-in.
+- Separate views for lost and found items.
+- Item reporting for lost and found belongings.
+- SQLite and Firebase integration for application data.
 
-## My Contribution
+## Technology
 
-I developed the application independently, including its main user flows, item-listing experience, reporting workflow, and SQLite/Firebase integration.
+- Flutter and Dart
+- SQLite
+- Firebase
 
-## Technology Stack
+## Run locally
 
-- **Framework:** Flutter
-- **Language:** Dart
-- **Local database:** SQLite
-- **Backend services:** Firebase
+**Requirements:** Flutter SDK, an Android or iOS development environment, and access to the Firebase project configuration used by the app.
 
-The exact division of responsibilities between SQLite and Firebase depends on the implementation in the source code. Keep credentials and private Firebase configuration out of the repository.
-
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK installed and configured.
-- Android Studio, VS Code, or another Flutter-compatible development environment.
-- An Android emulator or physical device.
-- Any Firebase configuration required by the application.
-
-### Installation
-
-The Flutter application is located in the `lost_and_founds_simple` directory:
+From the project root:
 
 ```bash
-cd lost_and_founds_simple
 flutter pub get
-```
-
-### Run
-
-```bash
 flutter run
 ```
 
-## Repository Layout
+To build a release APK:
 
-```text
-.
-├── lost_and_founds_simple/  # Flutter application
-├── assets/
-│   └── screenshots/         # Add application screenshots here
-└── README.md
+```bash
+flutter build apk --release
 ```
 
-The repository may also contain supporting academic documents. The layout above highlights the application and the recommended screenshot location.
+Firebase must be configured for the target platform before running the application. Keep private credentials and signing keys out of version control.
 
-## Academic Context
+## Project structure
 
-This project was developed for the CSM3114 assessment. It is an independently developed project; the application scope and contribution statements above describe my work.
+The application code and reusable UI are organised under `lib/`; static resources and app screenshots are kept under `assets/`.
+
+```text
+lib/
+├── data/
+├── model/
+├── screens/
+└── widgets/
+
+assets/
+├── images/
+└── screenshots/
+```
 
 ## License
 
-Add a `LICENSE` file if you intend to grant others permission to use, modify, or distribute this code. Until a licence is specified, do not assume that public visibility grants reuse rights.
+Distributed under the MIT License. See [LICENSE](LICENSE).

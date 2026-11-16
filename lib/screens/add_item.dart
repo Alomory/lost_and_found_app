@@ -35,20 +35,55 @@ class _AddItemState extends State<AddItem> {
     super.dispose();
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    final pickedImage = await ImagePicker().pickImage(
-      source: source,
-      imageQuality: 85,
-      maxWidth: 1200,
-    );
-    if (pickedImage == null || !mounted) return;
-    setState(() {
-      _selectedImage = File(pickedImage.path);
-    });
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _recoverLostImage();
   }
 
-  void _showImageSourceSheet() {
-    showModalBottomSheet<void>(
+  Future<void> _recoverLostImage() async {
+    try {
+      final response = await _picker.retrieveLostData();
+      if (!mounted || response.isEmpty || response.file == null) return;
+      setState(() {
+        _selectedImage = File(response.file!.path);
+      });
+    } catch (_) {
+      // Ignore lost-data retrieval issues and allow normal picking flow.
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedImage = await _picker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+      if (!mounted) return;
+      if (pickedImage == null) {
+        // Camera apps can return null on first attempt in some cases; try recovering lost data.
+        await _recoverLostImage();
+        return;
+      }
+      setState(() {
+        _selectedImage = File(pickedImage.path);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      showAppSnackBar(
+        context,
+        message: 'Could not open ${source == ImageSource.camera ? 'camera' : 'gallery'}. Please try again.',
+        isError: true,
+      );
+    }
+  }
+
+  Future<void> _showImageSourceSheet() async {
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
       builder: (ctx) => SafeArea(
@@ -60,24 +95,24 @@ class _AddItemState extends State<AddItem> {
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
                 title: const Text('Choose from Gallery'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.gallery);
-                },
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt_outlined),
                 title: const Text('Take a Photo'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.camera);
-                },
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
             ],
           ),
         ),
       ),
     );
+    if (source == null || !mounted) return;
+    // Let the bottom sheet fully dismiss before launching the picker to avoid
+    // activity/result conflicts that can require a second tap on some devices.
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    await _pickImage(source);
   }
 
   Future<void> _submit() async {
@@ -95,30 +130,36 @@ class _AddItemState extends State<AddItem> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Post ${_isFoundSelected ? 'Found' : 'Lost'} Item?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                _selectedImage!,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    _selectedImage!,
+                    height: 120,
+                    width: 360,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const Gap(12),
+                Text(
+                  _itemNameController.text.trim(),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+                const Gap(4),
+                Text(
+                  _itemLocController.text.trim(),
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
+              ],
             ),
-            const Gap(12),
-            Text(
-              _itemNameController.text.trim(),
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-            ),
-            const Gap(4),
-            Text(
-              _itemLocController.text.trim(),
-              style: const TextStyle(color: AppTheme.textSecondary),
-            ),
-          ],
+          ),
         ),
         actions: [
           TextButton(
@@ -127,6 +168,9 @@ class _AddItemState extends State<AddItem> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 40),
+            ),
             child: const Text('Publish'),
           ),
         ],
@@ -226,6 +270,13 @@ class _AddItemState extends State<AddItem> {
                                 bottom: 10,
                                 child: FilledButton.tonalIcon(
                                   onPressed: _showImageSourceSheet,
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size(0, 36),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                  ),
                                   icon: const Icon(Icons.edit, size: 16),
                                   label: const Text('Change'),
                                 ),

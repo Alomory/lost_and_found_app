@@ -49,6 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 40),
+            ),
             child: const Text('Sign Out'),
           ),
         ],

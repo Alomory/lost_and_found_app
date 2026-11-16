@@ -90,6 +90,7 @@ class _ItemDetailsState extends State<ItemDetails> {
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
+              minimumSize: const Size(0, 40),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Delete'),

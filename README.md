@@ -1,6 +1,6 @@
 # Lost & Found App
 
-A Flutter application for reporting lost and found belongings. Users can create an account, browse separate lost and found listings, and submit reports for items.
+A modern, offline-first Flutter application for tracking, reporting, and reclaiming lost and found belongings. Users can authenticate, browse categorized lost and found listings, report items with photos, and synchronize data with remote endpoints automatically when network connectivity is available.
 
 ## Screenshots
 
@@ -37,58 +37,79 @@ A Flutter application for reporting lost and found belongings. Users can create 
   </tr>
 </table>
 
-<!-- ![Login and sign-up screens](assets/screenshots/authentication.png)
-
-![Lost and Found item listings|250x400](assets/screenshots/item-listings.png) ![Report a lost or found item|100](assets/screenshots/report-item.png)
-
-![Lost or found item detail](assets/screenshots/detail-screen.png) -->
-
 ## Features
 
-- Account registration and sign-in.
-- Separate views for lost and found items.
-- Item reporting for lost and found belongings.
-- SQLite and Firebase integration for application data.
+- **Secure Authentication**: Registration and sign-in with SHA-256 password hashing.
+- **Offline-First SQLite Storage**: All reports and account data are saved locally in SQLite (`sqflite`). The app works seamlessly without an internet connection.
+- **Automatic Online Sync**: Listens to connectivity changes (`connectivity_plus`) and automatically synchronizes pending local reports and fetches remote updates when connection returns.
+- **Categorized Tabs**: Distinct views for Lost and Found items with real-time counters.
+- **Instant Search**: Filter items in real time by name, description, location, or poster.
+- **Photo Attachments**: Capture from Camera or select from Gallery; images are safely persisted in app storage.
+- **Listing Management**: Item posters can edit or delete their own reports.
+- **Modern Material 3 UI**: Clean cards, rounded segmented buttons, status badges, hero transitions, and floating notifications.
 
-## Technology
+## Technology Stack
 
-- Flutter and Dart
-- SQLite
-- Firebase
+- **Framework**: Flutter 3 (Material 3 enabled) & Dart 3
+- **Local Persistence**: `sqflite`, `path`, `path_provider`
+- **State Management**: `provider`
+- **Network & Connectivity**: `connectivity_plus`, `http`
+- **Security**: `crypto` (SHA-256)
+- **Formatting**: `intl`
 
-## Run locally
+## Run Locally
 
-**Requirements:** Flutter SDK, an Android or iOS development environment, and access to the Firebase project configuration used by the app.
+**Requirements:** Flutter SDK (3.x or later) and an Android or iOS emulator/device.
 
 From the project root:
 
 ```bash
+# 1. Fetch dependencies
 flutter pub get
+
+# 2. Run static analyzer (0 warnings standard)
+flutter analyze
+
+# 3. Run automated unit & widget tests
+flutter test
+
+# 4. Run the app
 flutter run
 ```
 
-To build a release APK:
+To build a release APK for Android:
 
 ```bash
 flutter build apk --release
 ```
 
-Firebase must be configured for the target platform before running the application. Keep private credentials and signing keys out of version control.
-
-## Project structure
-
-The application code and reusable UI are organised under `lib/`; static resources and app screenshots are kept under `assets/`.
+## Project Structure
 
 ```text
 lib/
-├── data/
-├── model/
-├── screens/
-└── widgets/
+├── main.dart                      # Application root & theme config
+├── model/                         # User & Item data entities
+│   ├── item.dart
+│   └── user.dart
+├── providers/                     # State management
+│   └── app_provider.dart
+├── screens/                       # App screens
+│   ├── add_item.dart
+│   ├── auth_screen.dart
+│   ├── home_screen.dart
+│   └── item_details.dart
+├── services/                      # SQLite & Remote sync services
+│   ├── database_helper.dart
+│   └── remote_sync_service.dart
+├── theme/                         # Material 3 design system
+│   └── app_theme.dart
+├── util.dart                      # Notification helpers
+└── widgets/                       # Reusable UI widgets
+    ├── item_card.dart
+    └── item_image.dart
 
-assets/
-├── images/
-└── screenshots/
+test/
+└── app_test.dart                  # Automated tests
 ```
 
 ## License

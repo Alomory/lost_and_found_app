@@ -1,268 +1,269 @@
 import 'package:flutter/material.dart';
-import 'package:lost_and_founds_simple/data/list_of_items_dummy.dart';
-import 'package:lost_and_founds_simple/model/user.dart';
-import 'package:lost_and_founds_simple/screens/home_screen.dart';
-import 'package:lost_and_founds_simple/util.dart' as util;
 import 'package:gap/gap.dart';
+import 'package:lost_and_founds_simple/providers/app_provider.dart';
+import 'package:lost_and_founds_simple/screens/home_screen.dart';
+import 'package:lost_and_founds_simple/theme/app_theme.dart';
+import 'package:lost_and_founds_simple/util.dart';
 import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({Key? key}) : super(key: key);
+  const AuthScreen({super.key});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController phoneNoController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _phoneNoController = TextEditingController();
 
-  late List<User> _users;
-  bool _logState = false;
-  String _logTextButton = 'Sign Up';
-  String _logText = "Login";
-  String _logScript = 'Already have an account ';
+  bool _isLoginMode = true;
+  bool _obscurePassword = true;
+  bool _isSubmitting = false;
+
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    _phoneNoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+    final provider = context.read<AppProvider>();
+
+    final result = _isLoginMode
+        ? await provider.login(
+            _emailController.text,
+            _passwordController.text,
+          )
+        : await provider.register(
+            email: _emailController.text,
+            username: _usernameController.text,
+            password: _passwordController.text,
+            phoneNo: _phoneNoController.text,
+          );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    showAppSnackBar(
+      context,
+      message: result.message,
+      isError: !result.success,
+    );
+
+    if (result.success && result.user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(user: result.user!),
+        ),
+      );
+    }
+  }
+
+  void _fillDemoUser() {
+    setState(() {
+      _isLoginMode = true;
+      _emailController.text = 'omar@gmail.com';
+      _passwordController.text = 'Omar';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    ListOfItems logingProvider = Provider.of<ListOfItems>(context);
-    _users = logingProvider.userList;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_logTextButton),
-        backgroundColor: Theme.of(context).primaryColorLight,
-        foregroundColor: Colors.black,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).orientation == Orientation.landscape
-              ? MediaQuery.of(context).size.height * 2
-              : MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(color: Colors.grey[100]),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 50, 20, 40),
-                child: Column(
-                  children: _logState
-                      ? [
-                          TextFormField(
-                            controller: emailController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Email';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Email'),
-                          ),
-                          TextFormField(
-                            controller: passwordController,
-                            obscureText: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Password';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Password'),
-                          )
-                        ]
-                      : [
-                          TextFormField(
-                            controller: emailController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Email';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Email'),
-                          ),
-                          TextFormField(
-                            controller: passwordController,
-                            obscureText: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Password';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Password'),
-                          ),
-                          TextFormField(
-                            controller: usernameController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Username';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Username'),
-                          ),
-                          TextFormField(
-                            controller: phoneNoController,
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Phone No';
-                              }
-                              return null;
-                            },
-                            decoration:
-                                const InputDecoration(labelText: 'Phone No'),
-                          )
-                        ],
-                ),
-              ),
-              Gap(!_logState ? 50 : 110),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Column(
-                    children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width / 3,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black,
-                              offset: Offset(2.0, 7.0),
-                              blurRadius: 30.0,
-                              spreadRadius: 0.5,
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[100]),
-                          child: Text(
-                            _logTextButton,
-                            style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18),
-                          ),
-                          onPressed: () {
-                            if (_logState) {
-                              if (emailController.text.isNotEmpty &&
-                                  passwordController.text.isNotEmpty) {
-                                User thisUser = User.login(
-                                    email: emailController.text,
-                                    password: passwordController.text,
-                                    phoneNo: "");
-                                bool grantAccess = false;
-                                User anotherTemp = thisUser;
-                                for (User tempUser in _users) {
-                                  (anotherTemp, grantAccess) = thisUser.auth(
-                                      thisUser.email,
-                                      thisUser.password,
-                                      tempUser);
-                                  if (grantAccess) break;
-                                }
-                                if (grantAccess) {
-                                  ScaffoldMessenger.of(context).showSnackBar(util.showSnackBar(context, "${anotherTemp.userName} Logged in Successfully", "", (){}));
-
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => HomeScreen(user: anotherTemp),
-                                    ),
-                                  );
-                                }else{
-                                  ScaffoldMessenger.of(context).showSnackBar(util.showSnackBar(context, "${thisUser.email}, is not signed up yet", "", (){}));
-
-                                }
-                              }
-                            } else {
-                              if (emailController.text.isNotEmpty &&
-                                  passwordController.text.isNotEmpty &&
-                                  usernameController.text.isNotEmpty) {
-                                User newUser = User(
-                                    email: emailController.text,
-                                    username: usernameController.text,
-                                    password: passwordController.text,
-                                    phoneNo: phoneNoController.text);
-                                bool checkBeforeAdding =
-                                    newUser.checkUser(logingProvider.userList);
-                                print(
-                                    "#Debug auth_screen.dart -> users return value = $checkBeforeAdding");
-                                if (checkBeforeAdding) {
-                                  ScaffoldMessenger.of(context).showSnackBar(util.showSnackBar(context, "${newUser.email} Already Registered..", "OK", (){}));
-
-                                } else {
-                                  logingProvider.addUser(newUser);
-                                  print(
-                                      "#Debug auth_screen.dart -> users number = ${logingProvider.userList.length}");
-                                  print(
-                                      "#Debug auth_screen.dart -> users number(local) = ${_users.length}");
-                                  ScaffoldMessenger.of(context).showSnackBar(util.showSnackBar(context, "${newUser.userName} Signed up Successfully", "", (){}));
-
-                                  Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return HomeScreen(
-                                      user: newUser,
-                                    );
-                                  }));
-                                }
-                              }
-                            }
-                          },
-                        ),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.travel_explore_rounded,
+                      size: 34,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const Gap(20),
+                  Text(
+                    _isLoginMode ? 'Welcome back' : 'Create account',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  const Gap(6),
+                  Text(
+                    _isLoginMode
+                        ? 'Sign in to report or claim lost & found items.'
+                        : 'Join your community to help return lost belongings.',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const Gap(24),
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Text('Sign In'),
+                        icon: Icon(Icons.login_rounded, size: 18),
                       ),
-                      Gap(!_logState ? 100 : 50),
-                      TextButton(
-                        child: RichText(
-                          text: TextSpan(
-                            text: _logScript,
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold),
-                            children: <TextSpan>[
-                              TextSpan(
-                                text: _logText,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _logState = !_logState;
-                            _logTextButton = (_logState) ? "Login" : "Sign Up";
-                            _logText = (!_logState) ? "Login" : "Sign Up";
-                            _logScript = (!_logState)
-                                ? 'Already have an account '
-                                : 'Become a member and ';
-                            usernameController.text ="";
-                            phoneNoController.text = "";
-                          });
-                        },
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Text('Sign Up'),
+                        icon: Icon(Icons.person_add_alt_1_rounded, size: 18),
                       ),
                     ],
+                    selected: {_isLoginMode},
+                    onSelectionChanged: (selection) {
+                      setState(() {
+                        _isLoginMode = selection.first;
+                        _formKey.currentState?.reset();
+                      });
+                    },
                   ),
+                  const Gap(24),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                          validator: (value) {
+                            final v = value?.trim() ?? '';
+                            if (v.isEmpty) return 'Please enter your email';
+                            if (!v.contains('@') || !v.contains('.')) {
+                              return 'Please enter a valid email address';
+                            }
+                            return null;
+                          },
+                        ),
+                        const Gap(14),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          textInputAction: _isLoginMode
+                              ? TextInputAction.done
+                              : TextInputAction.next,
+                          onFieldSubmitted:
+                              _isLoginMode ? (_) => _submit() : null,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            if (!_isLoginMode && value.length < 4) {
+                              return 'Password must be at least 4 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                        if (!_isLoginMode) ...[
+                          const Gap(14),
+                          TextFormField(
+                            controller: _usernameController,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Full Name',
+                              prefixIcon: Icon(Icons.person_outline),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const Gap(14),
+                          TextFormField(
+                            controller: _phoneNoController,
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _submit(),
+                            decoration: const InputDecoration(
+                              labelText: 'Phone Number',
+                              prefixIcon: Icon(Icons.phone_outlined),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const Gap(24),
+                  FilledButton(
+                    onPressed: _isSubmitting ? null : _submit,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(_isLoginMode ? 'Sign In' : 'Create Account'),
+                  ),
+                  const Gap(16),
+                  if (_isLoginMode)
+                    TextButton.icon(
+                      onPressed: _fillDemoUser,
+                      icon: const Icon(Icons.bolt_rounded, size: 18),
+                      label: const Text('Use demo account (omar@gmail.com)'),
+                    ),
                 ],
-              )
-            ],
+              ),
+            ),
           ),
         ),
       ),
